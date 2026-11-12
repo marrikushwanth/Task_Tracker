@@ -1,0 +1,29 @@
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+config/database.local.php
+
+# Logs and Sessions
+*.log
+logs/
+session_data/
+
+# OS and Editor artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Temporary & backup files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Tools and runtime binaries (if downloaded locally)
+tools/
+php_errors.log

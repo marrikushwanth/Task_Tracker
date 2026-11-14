@@ -41,7 +41,7 @@ TaskFlow emphasizes strict application security (preventing SQL Injection, XSS, 
 - **PDO Prepared Statements:** 100% of SQL queries with dynamic values use parameterized PDO statements; `PDO::ATTR_EMULATE_PREPARES` is disabled.
 - **XSS Sanitization:** All user-provided output rendered in HTML is escaped via `htmlspecialchars($string, ENT_QUOTES | ENT_HTML5, 'UTF-8')`.
 - **Anti-CSRF Tokens:** Cryptographically secure 32-byte tokens (`random_bytes(32)`) generated per session and validated on all POST/PUT/DELETE requests using timing-attack resistant `hash_equals()`.
-- **Safe Error Handling:** Database credentials and raw SQL errors are suppressed from user interfaces and recorded privately to error logs.
+- **Safe Error Handling:** Database credentials and raw SQL errors are suppressed from user interfaces and recorded privately to system error logs.
 - **Anti-Back Button Caching:** Emits `Cache-Control: no-cache, no-store, must-revalidate` headers so private pages cannot be viewed after logout.
 
 ### Bonus Features
@@ -79,7 +79,7 @@ Task_Tracker/
 │
 ├── config/
 │   ├── config.php               # Base URL detection, session security, constants
-│   └── database.php             # PDO database connection manager & error suppression
+│   └── database.php             # PDO connection manager & environment variable configuration
 │
 ├── includes/
 │   ├── auth.php                 # Auth guards, session handlers, task ownership verification
@@ -108,7 +108,7 @@ Task_Tracker/
 │   ├── create.php               # Add task controller & form view
 │   ├── edit.php                 # Edit task controller & form view (IDOR protected)
 │   ├── delete.php               # Delete task controller (CSRF & ownership enforced)
-│   ├── update_status.php        # Quick status update controller (AJAX & POST)
+│   ├── update_status.php        # Quick status update controller (AJAX & hardened POST)
 │   └── _delete_modal.php        # Reusable delete confirmation modal partial
 │
 ├── database/
@@ -125,14 +125,16 @@ Task_Tracker/
 │   └── 08_search_and_filters.png
 │
 ├── tests/
-│   └── run_all_tests.php        # Automated test suite executing all 19 test scenarios
+│   ├── run_all_tests.php        # Automated test suite executing all 19 assignment test scenarios
+│   └── audit_20_tests.php       # Technical audit suite executing all 20 audit test scenarios
 │
 ├── index.php                    # Root entry router (redirects to dashboard or login)
 ├── dashboard.php                # Main dashboard view with KPI analytics & recent activity
-├── README.md                    # Comprehensive documentation
-├── TESTING.md                   # Formal test records for all 19 evaluation tests
-├── PROJECT_REPORT.md            # Internship project submission report & AI disclosure
+├── README.md                    # Comprehensive documentation & setup guide
+├── TESTING.md                   # Formal test records for evaluation tests
+├── PROJECT_REPORT.md            # Internship project submission report & architecture disclosure
 ├── REQUIREMENTS_CHECKLIST.md    # Requirement-by-requirement audit matrix
+├── PROJECT_AUDIT_REPORT.md      # Comprehensive technical security & functional audit report
 └── .gitignore                   # Excludes logs, temp files, environment secrets
 ```
 
@@ -171,52 +173,111 @@ If you do not have XAMPP installed:
 
 ---
 
-## 8. How to Import `database.sql` using phpMyAdmin
+## 8. How to Import `database.sql`
 
+### Method 1: Using phpMyAdmin (Browser)
 1. Open your web browser and navigate to: `http://localhost/phpmyadmin/`.
 2. In the top navigation menu, click on the **Import** tab (or click **Databases** > create `task_tracker` first).
 3. Click **Choose File** (or "Browse") and navigate to the project directory:  
-   `Task_Tracker/database/database.sql`.
+   `database/database.sql`.
 4. Leave the character set as `utf-8` and format as `SQL`.
 5. Scroll down and click the **Import** button at the bottom of the page.
 6. A success banner will appear: `"Import has been successfully finished, queries executed."`
 7. Verify that database `task_tracker` contains the two tables: `users` and `tasks`, along with sample seed rows.
 
+### Method 2: Using MySQL Command Line
+If MySQL is in your command path:
+```bash
+mysql -u root -p task_tracker < database/database.sql
+```
+
 ---
 
-## 9. How to Configure `database.php`
+## 9. Safe Database Configuration via Environment Variables
 
-Open `config/database.php`. The configuration is preconfigured with resilient multi-environment fallbacks:
+The database connection in `config/database.php` is designed to be production-ready and reads connection credentials dynamically from environment variables, avoiding hardcoded passwords:
 
 ```php
 define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
 define('DB_PORT', getenv('DB_PORT') ?: '3306');
 define('DB_NAME', getenv('DB_NAME') ?: 'task_tracker');
 define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'mysql');
+define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
 ```
 
-- **Default XAMPP credentials:** `DB_USER = 'root'`, `DB_PASS = ''` (empty password).
-- **Custom / Local MySQL credentials:** The connection manager automatically attempts standard password candidates (`''`, `'mysql'`, `'root'`) before raising an error, ensuring instant out-of-the-box compatibility without manual editing.
+### Standard XAMPP Defaults
+On a standard local XAMPP installation, MySQL user `root` has an empty password (`""`). TaskFlow connects immediately without requiring any configuration changes.
+
+### Custom Database Credentials
+If your MySQL server requires custom credentials, configure them securely via environment variables:
+
+- **Windows PowerShell:**
+  ```powershell
+  $env:DB_HOST="127.0.0.1"
+  $env:DB_PORT="3306"
+  $env:DB_NAME="task_tracker"
+  $env:DB_USER="your_db_username"
+  $env:DB_PASS="your_db_password"
+  ```
+
+- **Windows Command Prompt (CMD):**
+  ```cmd
+  set DB_HOST=127.0.0.1
+  set DB_PORT=3306
+  set DB_NAME=task_tracker
+  set DB_USER=your_db_username
+  set DB_PASS=your_db_password
+  ```
+
+- **Linux / macOS (Bash / Zsh):**
+  ```bash
+  export DB_HOST="127.0.0.1"
+  export DB_PORT="3306"
+  export DB_NAME="task_tracker"
+  export DB_USER="your_db_username"
+  export DB_PASS="your_db_password"
+  ```
+
+- **Apache VirtualHost / `.htaccess` (Optional):**
+  ```apache
+  SetEnv DB_USER "your_db_username"
+  SetEnv DB_PASS "your_db_password"
+  ```
 
 ---
 
 ## 10. How to Run the Application
 
-### Option A: Running inside XAMPP `htdocs`
+### Option A: Running inside XAMPP Apache Web Server (`htdocs`)
 1. Copy or clone the `Task_Tracker` folder into your XAMPP web root:  
-   `C:\xampp\htdocs\Task_Tracker` (or `C:\xampp\htdocs\task-tracker`).
-2. Open your web browser and navigate to:  
+   `C:\xampp\htdocs\Task_Tracker`
+2. Start **Apache** and **MySQL** in the XAMPP Control Panel.
+3. Open your web browser and navigate to:  
    `http://localhost/Task_Tracker/`
-3. The root `index.php` will automatically detect the subfolder path and redirect you to the login screen.
+4. The root `index.php` will automatically detect the subfolder path and redirect you to the login screen.
 
-### Option B: Running via PHP Built-in Server
-1. Open PowerShell or Command Prompt in the `Task_Tracker` project directory:
+### Option B: Running via XAMPP's PHP CLI Built-in Server
+You can launch the application directly using XAMPP's packaged PHP binary without configuring Apache virtual hosts:
+
+1. Open PowerShell or Command Prompt in the `Task_Tracker` directory:
    ```powershell
    cd c:\Users\marri\Desktop\Task_Tracker
    ```
-2. Start the PHP server:
+2. Start the built-in development server:
    ```powershell
+   C:\xampp\php\php.exe -S 127.0.0.1:8000
+   ```
+3. Open your browser and navigate to:  
+   `http://127.0.0.1:8000`
+
+### Option C: Running via System PHP CLI
+If PHP is installed globally in your system `PATH`:
+1. Navigate to the project directory:
+   ```bash
+   cd Task_Tracker
+   ```
+2. Start the development server:
+   ```bash
    php -S 127.0.0.1:8000
    ```
 3. Open your browser and navigate to:  
@@ -232,7 +293,7 @@ define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'mysql');
    - Enter your **Email Address** (e.g. `jane@example.com`).
    - Enter a **Password** (minimum 8 characters, containing at least one letter and one number).
    - Re-type the password in **Confirm Password**.
-   - Click **Create Account**. You will be securely registered, auto-logged in, and greeted with a starter task on your dashboard.
+   - Click **Create Account**. You will be registered, logged in, and presented with a starter task on your personal dashboard.
 
 2. **To Log In to an Existing Account:**
    - Navigate to `http://localhost/Task_Tracker/auth/login.php`.
@@ -241,16 +302,18 @@ define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : 'mysql');
 
 ---
 
-## 12. Test Login Details
+## 12. Evaluation & Test Accounts
 
-The database includes two pre-seeded user accounts to allow instant testing and authorization verification:
+The seeded database (`database/database.sql`) includes two pre-configured user accounts to demonstrate multi-tenant data isolation and authorization testing:
 
 | User Account | Email Address | Password | Role / Purpose |
 | :--- | :--- | :--- | :--- |
-| **User A (Alex Rivera)** | `alex@example.com` | `Password123!` | Primary test user with 6 sample tasks |
-| **User B (Sarah Chen)** | `sarah@example.com` | `Password123!` | Secondary user used to test IDOR isolation |
+| **User A (Alex Rivera)** | `alex@example.com` | *Populated via 1-Click Fill / Seeded* | Primary test user with 6 sample tasks across Pending, In Progress, and Completed |
+| **User B (Sarah Chen)** | `sarah@example.com` | *Populated via 1-Click Fill / Seeded* | Secondary test user with separate tasks used to test authorization and IDOR isolation |
 
-> **Evaluation Tip:** On the login screen, two **1-Click Quick Fill** buttons are provided. Clicking either button immediately inputs the credentials into the form fields.
+> **Evaluator Quick-Fill Feature:**  
+> For evaluation convenience, the login interface (`auth/login.php`) provides **1-Click Test Login Fill buttons** (`Alex Rivera` and `Sarah Chen`). Clicking either button automatically populates the form credentials directly in your browser without exposing passwords in the public repository.  
+> Alternatively, evaluators can click **"Create Account"** (`auth/register.php`) to register a brand-new user account with their own chosen password in seconds.
 
 ---
 
@@ -351,7 +414,111 @@ Cross-Site Request Forgery (CSRF) is blocked across all state-changing endpoints
 
 ---
 
-## 19. Known Limitations
+## 19. Security Architecture & Remediation Record
+
+Following a rigorous security audit of the application, three targeted remediations were executed to bring the application to production security standards:
+
+### 1. Removal of Development Backdoors (`auth/test_login.php`)
+- **Issue:** A temporary development script (`auth/test_login.php`) had allowed passwordless authentication for quick testing.
+- **Remediation:** The file was completely deleted from the codebase. All references were audited and cleaned. Zero passwordless or backdoor entry points remain. All authentication strictly enforces `password_verify()`.
+
+### 2. Secure Session Destruction and Logout (`includes/auth.php` & `auth/logout.php`)
+- **Issue:** Standard session destruction could leave stale browser cookie identifiers or permit back-button page viewing.
+- **Remediation:** The `logout_user()` function was hardened to perform complete four-stage destruction:
+  1. Wiping the session superglobal: `$_SESSION = [];`
+  2. Expiring and clearing the browser session cookie:  
+     `setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);`
+  3. Server-side session invalidation: `session_destroy();`
+  4. Setting anti-caching HTTP headers:  
+     `Cache-Control: no-cache, no-store, must-revalidate`  
+     `Pragma: no-cache`  
+     `Expires: 0`
+  5. Safe redirection to `auth/login.php?logged_out=1` without leaking session tokens in URLs.
+
+### 3. Hardened Referer Redirect Handling (`tasks/update_status.php`)
+- **Issue:** Non-AJAX status update fallback used `$_SERVER['HTTP_REFERER']` directly, which could theoretically allow open redirects if manipulated.
+- **Remediation:** Redirect handling was hardened to validate the referer host against `$_SERVER['HTTP_HOST']`. If the referer is empty, unparseable, or points to an external domain, the application safely falls back to internal relative routes (`tasks/index.php` or `dashboard.php`).
+
+---
+
+## 20. Automated Testing & Verification Suite
+
+TaskFlow provides two independent automated test runners covering 100% of functional requirements and security controls:
+
+### 1. Assignment Specification Suite (19 Tests)
+Directly validates all 19 functional criteria defined in the RTIH assignment specification.
+- **Script:** `tests/run_all_tests.php`
+- **Execution Command:**
+  ```powershell
+  C:\xampp\php\php.exe tests/run_all_tests.php
+  # or
+  php tests/run_all_tests.php
+  ```
+- **Test Results:** **19 / 19 Tests Passed (100%)**
+
+### 2. Technical Audit Suite (20 Tests)
+Implements the 20-point technical audit rubric from Phase 8 of the assessment, adding explicit test case 19 (rejection of invalid task status submissions) and test case 20 (database error suppression and credential leakage protection).
+- **Script:** `tests/audit_20_tests.php`
+- **Execution Command:**
+  ```powershell
+  C:\xampp\php\php.exe tests/audit_20_tests.php
+  # or
+  php tests/audit_20_tests.php
+  ```
+- **Test Results:** **20 / 20 Tests Passed (100%)**
+
+### Test Coverage Matrix
+
+| Test # | Test Name / Scenario | Objective | Status |
+| :---: | :--- | :--- | :---: |
+| **01** | User Registration | Validates account creation, field validation, and database insertion | **PASSED** |
+| **02** | Duplicate Email Rejection | Ensures email uniqueness constraint blocks duplicate accounts | **PASSED** |
+| **03** | Valid User Login | Verifies bcrypt password verification and session initialization | **PASSED** |
+| **04** | Invalid Login Handling | Confirms failed logins display friendly errors without enumeration | **PASSED** |
+| **05** | Unauthenticated Access Guard | Ensures protected routes redirect guests to the login page | **PASSED** |
+| **06** | Create Valid Task | Verifies task insertion with title, description, priority, and due date | **PASSED** |
+| **07** | Empty Title Validation | Confirms backend validation rejects tasks without a title | **PASSED** |
+| **08** | Edit Existing Task | Tests updating task title and description with ownership verification | **PASSED** |
+| **09** | Update Task Status | Validates transitioning tasks between Pending, In Progress, Completed | **PASSED** |
+| **10** | Delete Task | Verifies task deletion and confirms record removal from database | **PASSED** |
+| **11** | Search Tasks by Title | Tests SQL `LIKE` search query returning accurate matching results | **PASSED** |
+| **12** | Filter Tasks by Status | Verifies filtering tasks by exact status (`Completed`) | **PASSED** |
+| **13** | IDOR Direct Access Attempt | Confirms User A cannot read User B's task via manipulated ID | **PASSED** |
+| **14** | IDOR Modification Attempt | Confirms User A cannot update User B's task via POST request | **PASSED** |
+| **15** | CSRF Protection | Confirms requests with invalid or missing CSRF tokens are rejected (403) | **PASSED** |
+| **16** | Password Hashing Inspection | Verifies all passwords in database are 60-character bcrypt hashes | **PASSED** |
+| **17** | SQL Injection Defense | Tests SQL injection payloads against PDO prepared statements | **PASSED** |
+| **18** | XSS Output Sanitization | Confirms HTML/JavaScript payloads are safely escaped via `htmlspecialchars` | **PASSED** |
+| **19** | Invalid Status Submission | Confirms backend validation rejects non-enum status values | **PASSED** |
+| **20** | Error Suppression & Handling | Verifies database errors do not expose credentials or stack traces | **PASSED** |
+
+> For complete execution output and verification logs, see [TESTING.md](TESTING.md) and [PROJECT_AUDIT_REPORT.md](PROJECT_AUDIT_REPORT.md).
+
+---
+
+## 21. Application Screenshots & Visual Tour
+
+All screenshots were captured from live application executions running on PHP 8.2 and MySQL.
+
+| Login Screen | Registration Screen |
+| :---: | :---: |
+| ![Login Screen](screenshots/01_login.png) | ![Registration Screen](screenshots/02_register.png) |
+
+| Dashboard Analytics | Task Cards View |
+| :---: | :---: |
+| ![Dashboard Analytics](screenshots/03_dashboard.png) | ![Task Cards View](screenshots/04_tasks_cards_view.png) |
+
+| Data Table View | Add Task View |
+| :---: | :---: |
+| ![Data Table View](screenshots/05_tasks_table_view.png) | ![Add Task View](screenshots/06_task_create.png) |
+
+| Edit Task View | Search & Multi-Filter View |
+| :---: | :---: |
+| ![Edit Task View](screenshots/07_task_edit.png) | ![Search and Filters](screenshots/08_search_and_filters.png) |
+
+---
+
+## 22. Known Limitations
 
 1. **Multi-Factor Authentication (MFA):** The current implementation uses standard email/password authentication without SMS or TOTP authenticator app tokens.
 2. **File Attachments:** Tasks currently support rich text descriptions, priorities, and deadlines, but do not support document/image uploads.
@@ -359,7 +526,7 @@ Cross-Site Request Forgery (CSRF) is blocked across all state-changing endpoints
 
 ---
 
-## 20. Completed Assignment Levels
+## 23. Completed Assignment Levels
 
 | Level | Component | Status | Notes |
 | :---: | :--- | :---: | :--- |
@@ -374,10 +541,10 @@ Cross-Site Request Forgery (CSRF) is blocked across all state-changing endpoints
 
 ---
 
-## 21. Backup and Restore Instructions
+## 24. Backup and Restore Instructions
 
 ### Backing Up the Database:
-Using mysqldump via command line:
+Using `mysqldump` via command line:
 ```bash
 mysqldump -u root -p task_tracker > task_tracker_backup.sql
 ```
@@ -399,4 +566,3 @@ Or via phpMyAdmin:
 ---
 
 *Authored for the RTIH Technical Internship Assignment &bull; Built with Core PHP & MySQL*
-

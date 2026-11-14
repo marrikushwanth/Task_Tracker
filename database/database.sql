@@ -81,3 +81,4 @@ INSERT INTO `tasks` (`id`, `user_id`, `title`, `description`, `status`, `priorit
 INSERT INTO `tasks` (`id`, `user_id`, `title`, `description`, `status`, `priority`, `due_date`, `created_at`) VALUES
 (7, 2, 'Sarah\'s Private Innovation Roadmap', 'Confidential project planning for Q1 innovation sprint. Must never be visible to Alex.', 'In Progress', 'High', DATE_ADD(CURRENT_DATE(), INTERVAL 4 DAY), NOW()),
 (8, 2, 'Prepare Investor Presentation Slides', 'Draft keynote deck highlighting key milestones and technical architecture metrics.', 'Pending', 'Medium', DATE_ADD(CURRENT_DATE(), INTERVAL 10 DAY), NOW());
+

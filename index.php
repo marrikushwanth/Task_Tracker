@@ -12,3 +12,4 @@ if (is_logged_in()) {
 } else {
     redirect('auth/login.php');
 }
+

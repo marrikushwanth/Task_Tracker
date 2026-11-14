@@ -101,3 +101,4 @@ function verify_csrf_request(bool $terminateOnFailure = true): bool {
 
     return true;
 }
+

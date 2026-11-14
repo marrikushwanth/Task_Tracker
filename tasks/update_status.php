@@ -95,10 +95,29 @@ try {
     set_flash('danger', 'Failed to update task status.');
 }
 
-// Redirect back to referring page or task list
+// Safe redirect handling for non-AJAX fallback
+// Mitigates Open Redirect vulnerabilities while seamlessly supporting both localhost and 127.0.0.1
 $referer = $_SERVER['HTTP_REFERER'] ?? '';
-if (!empty($referer) && strpos($referer, BASE_URL) === 0) {
-    header("Location: $referer");
-    exit;
+if (!empty($referer)) {
+    $parsedReferer = parse_url($referer);
+    $refererHost = strtolower($parsedReferer['host'] ?? '');
+    
+    // Determine allowed local hostnames
+    $currentHostName = strtolower(explode(':', $_SERVER['HTTP_HOST'] ?? 'localhost')[0]);
+    $allowedHosts = array_unique([$currentHostName, 'localhost', '127.0.0.1']);
+    
+    // Only accept referers from verified local hosts
+    if (in_array($refererHost, $allowedHosts, true)) {
+        $safePath = $parsedReferer['path'] ?? '';
+        $safeQuery = isset($parsedReferer['query']) ? '?' . $parsedReferer['query'] : '';
+        $safeTarget = str_replace(["\r", "\n"], '', $safePath . $safeQuery);
+        
+        if (!empty($safeTarget)) {
+            header("Location: " . $safeTarget);
+            exit;
+        }
+    }
 }
+
 redirect('tasks/index.php');
+

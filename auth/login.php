@@ -66,6 +66,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $flashMessages = get_flash_messages();
+if (isset($_GET['logged_out']) && empty($flashMessages)) {
+    $flashMessages[] = [
+        'type'    => 'info',
+        'message' => 'You have been logged out successfully.'
+    ];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -73,6 +79,8 @@ $flashMessages = get_flash_messages();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In &mdash; TaskFlow</title>
+    <!-- Brand Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/images/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -92,8 +100,8 @@ $flashMessages = get_flash_messages();
             <div class="card-body p-4 p-md-5">
                 <!-- Brand Header -->
                 <div class="text-center mb-4">
-                    <div class="auth-logo mx-auto mb-3">
-                        <i class="bi bi-check2-square fs-2 text-white"></i>
+                    <div class="auth-logo mx-auto mb-3 p-2">
+                        <img src="<?= BASE_URL ?>/assets/images/favicon.svg" alt="TaskFlow" width="44" height="44">
                     </div>
                     <h1 class="h3 fw-bold text-slate-900 mb-1">Welcome Back</h1>
                     <p class="text-muted small">Sign in to your account to manage your tasks</p>
@@ -188,3 +196,4 @@ $flashMessages = get_flash_messages();
     <script src="<?= BASE_URL ?>/assets/js/app.js"></script>
 </body>
 </html>
+

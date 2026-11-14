@@ -13,4 +13,6 @@ if (is_logged_in()) {
     logout_user();
 }
 
-redirect('auth/login.php');
+// Redirect to login page with explicit logged out confirmation parameter
+redirect('auth/login.php?logged_out=1');
+

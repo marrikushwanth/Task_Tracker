@@ -94,13 +94,14 @@ Task_Tracker/
 │   │   └── style.css            # SaaS design system (Linear/Notion-inspired styles)
 │   ├── js/
 │   │   └── app.js               # Modal handling, AJAX status updates, live search, toast helper
-│   └── images/                  # Application visual assets & icons
+│   └── images/
+│       ├── logo.svg             # Vector brand wordmark & gradient logo
+│       └── favicon.svg          # Modern squircle brand favicon
 │
 ├── auth/
 │   ├── login.php                # Authentication controller & login view
 │   ├── register.php             # User registration controller & view
-│   ├── logout.php               # Session destruction & redirect controller
-│   └── test_login.php           # 1-click evaluation login helper
+│   └── logout.php               # Session destruction & redirect controller
 │
 ├── tasks/
 │   ├── index.php                # Task list controller (Search, Filters, Sort, Pagination)
@@ -398,3 +399,4 @@ Or via phpMyAdmin:
 ---
 
 *Authored for the RTIH Technical Internship Assignment &bull; Built with Core PHP & MySQL*
+

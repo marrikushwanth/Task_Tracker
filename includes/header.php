@@ -34,6 +34,8 @@ $flashMessages = get_flash_messages();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?> &mdash; <?= APP_NAME ?></title>
+    <!-- Brand Favicon -->
+    <link rel="icon" type="image/svg+xml" href="<?= BASE_URL ?>/assets/images/favicon.svg">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
@@ -118,3 +120,4 @@ $flashMessages = get_flash_messages();
 
             <!-- Page Content Body -->
             <main class="app-content px-3 px-lg-4 py-3">
+

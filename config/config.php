@@ -70,3 +70,4 @@ function get_base_url(): string {
 }
 
 define('BASE_URL', get_base_url());
+

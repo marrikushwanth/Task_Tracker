@@ -381,3 +381,4 @@ include __DIR__ . '/includes/header.php';
 <?php include __DIR__ . '/tasks/_delete_modal.php'; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
+

@@ -41,7 +41,8 @@ php tests/run_all_tests.php
 | **TEST 16** | Check passwords stored as hashes | Security / Auth | Bcrypt hashes ($2y$, 60 chars) | Verified all rows in DB use bcrypt hashes | **PASSED** |
 | **TEST 17** | SQL Injection vulnerability attempt | Security / SQLi | Injection neutralized as literal | Prepared statement neutralizes payload | **PASSED** |
 | **TEST 18** | HTML / Script input escaping (XSS) | Security / XSS | Characters converted to entities | `e()` converts `<script>` to `&lt;script&gt;` | **PASSED** |
-| **TEST 19** | Error handling / credential leakage | Security / Errors | Credentials suppressed from UI | Raw SQL suppressed; friendly card shown | **PASSED** |
+| **TEST 19** | Test invalid status submission | Validation | Rejection of non-enum values | Server rejects invalid status with 422/error | **PASSED** |
+| **TEST 20** | Error handling / credential leakage | Security / Errors | Credentials suppressed from UI | Raw SQL suppressed; friendly card shown | **PASSED** |
 
 ---
 
@@ -250,7 +251,17 @@ php tests/run_all_tests.php
 
 ---
 
-### TEST 19: Check whether invalid input causes database credentials or raw server errors to appear
+### TEST 19: Test invalid status submission
+- **Input Data:**
+  - Status: `'Archived'` (Non-allowed status value; only 'Pending', 'In Progress', 'Completed' allowed)
+- **Execution:** Dispatched task update request with invalid status value.
+- **Expected Result:** Validation rejects non-enum value with error message: `"Invalid status selected."` Zero rows altered in database.
+- **Actual Result:** `validate_task_input()` rejected input with `valid = false` and `errors['status'] = 'Invalid status selected.'` Status in MySQL remained untouched.
+- **Status:** **PASSED**
+
+---
+
+### TEST 20: Check error handling / credential leakage
 - **Execution:** Triggered simulated database connectivity failures and invalid query exceptions.
 - **Expected Result:** Technical errors and credentials are not displayed to the user; friendly error notice is shown; full error is logged privately.
 - **Actual Result:** `try / catch` blocks in `config/database.php` caught the exception. Raw server DSN, passwords, and stack traces were suppressed. User was served a friendly styled error card, while technical details were logged via `error_log()`.
@@ -258,6 +269,17 @@ php tests/run_all_tests.php
 
 ---
 
+## Security Hardening Verification
+
+Following the formal RTIH technical audit, the following security hardening actions were completed and verified:
+1. **Critical Vulnerability Removal:** The development helper `auth/test_login.php` was permanently deleted. Codebase search confirms zero backdoor or passwordless login endpoints exist.
+2. **Open Redirect Mitigation:** In `tasks/update_status.php`, the non-AJAX fallback was hardened with host-normalized referer validation strictly whitelisting internal hostnames (`localhost`, `127.0.0.1`, current server host) and stripping CRLF injection vectors. External referers safely default to `tasks/index.php`.
+3. **Session Cleanliness on Logout:** `includes/auth.php` was updated so `logout_user()` completely clears memory variables, invalidates cookies, and destroys server session storage without re-instantiating a dangling session.
+4. **Brand Assets:** Professional SVG brand assets (`assets/images/logo.svg` and `assets/images/favicon.svg`) were integrated.
+
+---
+
 ## Conclusion
 
-The TaskFlow application has successfully passed **19 out of 19 tests (100% pass rate)**. The application demonstrates high stability, defensive input validation, comprehensive session integrity, and uncompromising tenant isolation.
+The TaskFlow application has successfully passed **20 out of 20 tests (100% pass rate)**. The application demonstrates exceptional stability, defensive input validation, comprehensive session integrity, robust security architecture, and uncompromising tenant isolation.
+

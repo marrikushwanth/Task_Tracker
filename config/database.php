@@ -76,3 +76,4 @@ function getDBConnection(): PDO {
         </div>
     ');
 }
+

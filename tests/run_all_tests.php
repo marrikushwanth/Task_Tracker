@@ -522,3 +522,4 @@ $passedTests = count(array_filter($results, fn($r) => $r['status'] === 'PASSED')
 echo "====================================================================\n";
 echo sprintf("TEST SUMMARY: %d / %d Tests Passed (%d%%)\n", $passedTests, $totalTests, round(($passedTests / $totalTests) * 100));
 echo "====================================================================\n";
+

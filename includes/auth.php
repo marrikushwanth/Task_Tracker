@@ -97,29 +97,27 @@ function login_user(array $user): void {
  * @return void
  */
 function logout_user(): void {
-    // Clear all session variables
+    // 1. Clear all session variables in memory
     $_SESSION = [];
 
-    // Delete the session cookie from the browser
+    // 2. Invalidate the session cookie on the client side
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
         setcookie(
             session_name(),
             '',
-            time() - 42000,
-            $params["path"],
-            $params["domain"],
-            $params["secure"],
-            $params["httponly"]
+            time() - 86400,
+            $params["path"] ?? '/',
+            $params["domain"] ?? '',
+            $params["secure"] ?? false,
+            $params["httponly"] ?? true
         );
     }
 
-    // Destroy the server-side session
-    session_destroy();
-
-    // Start a temporary session solely to display the logout confirmation notice
-    session_start();
-    set_flash('info', 'You have been logged out successfully.');
+    // 3. Destroy the server-side session data entirely
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_destroy();
+    }
 }
 
 /**

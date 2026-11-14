@@ -16,8 +16,8 @@ $currentUser = current_user();
     <!-- Brand / Header -->
     <div class="sidebar-brand px-4 py-3 border-bottom border-slate-800 d-flex align-items-center justify-content-between">
         <a href="<?= BASE_URL ?>/dashboard.php" class="d-flex align-items-center gap-2 text-decoration-none text-white">
-            <div class="brand-icon-box">
-                <i class="bi bi-check2-square text-primary-light fs-4"></i>
+            <div class="brand-icon-box p-1">
+                <img src="<?= BASE_URL ?>/assets/images/favicon.svg" alt="TaskFlow" width="28" height="28" class="d-block">
             </div>
             <div>
                 <span class="fs-5 fw-bold tracking-tight text-white"><?= APP_NAME ?></span>
@@ -122,3 +122,4 @@ $currentUser = current_user();
         </div>
     </div>
 </aside>
+

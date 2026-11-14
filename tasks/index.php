@@ -519,3 +519,4 @@ include __DIR__ . '/../includes/header.php';
 <?php include __DIR__ . '/_delete_modal.php'; ?>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
+
